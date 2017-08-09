@@ -1,11 +1,14 @@
 import sqlite3 as sql
 import itertools
-import Levenshtein
+#import Levenshtein
 
 import strutil
 import graphemat
 import morpho
 
+import os
+
+os.makedirs('.temp', exist_ok=True)
 
 
 # import pandas as pd
@@ -36,18 +39,21 @@ print(strutil.str_build_n_gramms_fix_len('abcdefghij', 3))
 
 print(strutil.str_build_n_gramms('abcde'))
 
-text = graphemat.load_file('test_003.txt')
+text = graphemat.load_file('data/test_003.txt')
 
 wfs = dict()
 for wf in text:
-    strutil.str_store_to_dict(wf, wfs)
+    strutil.str_store_to_dict(wfs, wf)
 
-db = sql.connect('lingua.db')
+
+
+db = sql.connect('.temp/lingua.db')
 c = db.cursor()
 
-c.execute('CREATE TABLE wfs (wf TEXT, usage INTEGER)')
+c.execute('DROP TABLE IF EXISTS wfs')
+c.execute('CREATE TABLE IF NOT EXISTS wfs (wf TEXT, usage INTEGER)')
 
-c.executemany(db, 'INSERT INTO wfs VALUES (?,?)', wfs)
+c.executemany('INSERT INTO wfs VALUES (?,?)', (wf for wf in wfs.items()))
 
 db.commit()
 

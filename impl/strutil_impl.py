@@ -120,5 +120,5 @@ def str_build_n_gramms(str):
 # сохранить строки в словарь с подсчетом количества их использования
 def str_store_to_dict(str_dict, str):
     #cnt = str_dict.get(str, 0)
-    str_dict[str] = str_dict.getdefault(str, 0) + 1
+    str_dict[str] = str_dict.get(str, 0) + 1
 
