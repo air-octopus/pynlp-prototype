@@ -28,16 +28,15 @@ os.makedirs('.temp', exist_ok=True)
 # df['Store 1'].
 
 
-
-print(strutil.str_convolution_max('abcd', 'oabqde'))
-
-print(strutil.str_split_by_equal('rabcdefgh', 'abcqpmgyli', 1))
-
-morpho.extract_proto_morphemes('rabcdefgh', 'abcqpmgyli')
-
-print(strutil.str_build_n_gramms_fix_len('abcdefghij', 3))
-
-print(strutil.str_build_n_gramms('abcde'))
+# print(strutil.str_convolution_max('abcd', 'oabqde'))
+#
+# print(strutil.str_split_by_equal('rabcdefgh', 'abcqpmgyli', 1))
+#
+# ttt = morpho.extract_proto_morphemes('rabcdefgh', 'abcqpmgyli')
+#
+# print(strutil.str_build_n_gramms_fix_len('abcdefghij', 3))
+#
+# print(strutil.str_build_n_gramms('abcde'))
 
 text = graphemat.load_file('data/test_003.txt')
 
@@ -51,12 +50,18 @@ db = sql.connect('.temp/lingua.db')
 c = db.cursor()
 
 c.execute('DROP TABLE IF EXISTS wfs')
-c.execute('CREATE TABLE IF NOT EXISTS wfs (wf TEXT, usage INTEGER)')
+c.execute('''CREATE TABLE IF NOT EXISTS wfs
+             (
+                   id       INTEGER PRIMARY KEY
+                 , wf       TEXT
+                 , usage    INTEGER
+             )
+          ''')
 
-c.executemany('INSERT INTO wfs VALUES (?,?)', (wf for wf in wfs.items()))
+c.executemany('INSERT INTO wfs VALUES (NULL,?,?)', (wf for wf in wfs.items()))
 
 db.commit()
 
-ngramms = dict
-
-wfs
+# ngramms = dict
+#
+# wfs

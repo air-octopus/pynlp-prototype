@@ -2,6 +2,7 @@ import unittest
 
 import strutil
 
+
 class Test_strutil(unittest.TestCase):
 
     def test__str_convolution_max(self):
@@ -17,5 +18,7 @@ class Test_strutil(unittest.TestCase):
         self.assertEqual(strutil.str_split_by_equal('rabcdefgh', 'abcqpmgyli', 1),
                          (['r', 'abc', 'def', 'g', 'h', ''], ['', 'abc', 'qpm', 'g', 'y', 'li']))
 
+
+# ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
     unittest.main()

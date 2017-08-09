@@ -1,40 +1,60 @@
+# Методы морфологического анализа
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Построение таблицы N-грамм
+def create_ngramms_table(db):
+    pass
+
+
+# ----------------------------------------------------------------------------------------------------------------------
 # функция определяет предполагаемые основы слов (общие части) и (прото)аффиксы -- то,
 # что осталось после удаления предполагаемых основ
+# \return   -- кортеж ([preffixes], 'base', [suffixes])
 def extract_proto_morphemes(s1, s2):
     from strutil import str_convolution_max, str_split_by_equal
 
-    sh, conv = str_convolution_max(s1, s2)
-    components = str_split_by_equal(s1, s2, sh)
+    sh, conv = str_convolution_max(s1, s2)      # Определяем смещение наилучшего совмещения строк
+    ss1, ss2 = str_split_by_equal(s1, s2, sh)   # Разбиваем строки на интервалыодинаковых и разных подстрок
 
-    assert len(components[0]) == len(components[1]), "Unexpected str_split_by_equal(...) result"
-    if len(components[0]) <= 0:
-        return ('', [])
+    assert len(ss1) == len(ss2), "Unexpected str_split_by_equal(...) result"
+    if len(ss1) <= 0:
+        return [], '', []
 
-    global i
-    i = 0
+    # def map_func(sub1, sub2):
+    #     return (len(sub1[1]), sub1[0]) if sub1[1] == sub2[1] else (0, 0)
 
-    def map_func(ss1, ss2):
-        global i
-        v = (len(ss1), i) if ss1 == ss2 else (0, 0)
-        i += 1
-        return v
+    # ищем индекс самого длинного совпадающего куска
+    # после выполнения proto_root_pos будет содержать индекс основы
+    proto_root_pos, stub = max(
+        map(
+            lambda sub1, sub2:
+                (sub1[0], len(sub1[1])) if sub1[1] == sub2[1] else (0, 0),
+            enumerate(ss1), enumerate(ss2)
+        ),
+        key=lambda x:
+            x[1])
 
-    proto_root_pos = max(map(map_func, components[0], components[1]), key=lambda x: x[0])
-
-    proto_affixes = \
+    proto_prefixes = \
         [
-              ''.join(components[0][:proto_root_pos[1]])
-            , ''.join(components[0][proto_root_pos[1] + 1:])
-            , ''.join(components[1][:proto_root_pos[1]])
-            , ''.join(components[1][proto_root_pos[1] + 1:])
+              ''.join(ss1[:proto_root_pos])
+            , ''.join(ss2[:proto_root_pos])
         ]
-    proto_affixes = [o for o in proto_affixes if o != '']
+    proto_suffixes = \
+        [
+              ''.join(ss1[proto_root_pos + 1:])
+            , ''.join(ss2[proto_root_pos + 1:])
+        ]
+    proto_prefixes = [o for o in proto_prefixes if o != '']
+    proto_suffixes = [o for o in proto_suffixes if o != '']
 
     return \
         (
-            # предполагаемый корень
-            components[0][proto_root_pos[1]],
-            # прото-аффиксы
-            proto_affixes
+            # прото-префиксы
+            proto_prefixes,
+            # прото-основа
+            ss1[proto_root_pos],
+            # прото-суффиксы
+            proto_suffixes
         )
 
