@@ -10,7 +10,6 @@ import os
 
 os.makedirs('.temp', exist_ok=True)
 
-
 # import pandas as pd
 # purchase_1 = pd.Series({'Name': 'Chris',
 # 'Item Purchased': 'Dog Food',
@@ -38,30 +37,9 @@ os.makedirs('.temp', exist_ok=True)
 #
 # print(strutil.str_build_n_gramms('abcde'))
 
-text = graphemat.load_file('data/test_003.txt')
-
-wfs = dict()
-for wf in text:
-    strutil.str_store_to_dict(wfs, wf)
-
-
-
 db = sql.connect('.temp/lingua.db')
-c = db.cursor()
 
-c.execute('DROP TABLE IF EXISTS wfs')
-c.execute('''CREATE TABLE IF NOT EXISTS wfs
-             (
-                   id       INTEGER PRIMARY KEY
-                 , wf       TEXT
-                 , usage    INTEGER
-             )
-          ''')
+graphemat.store_wordforms_to_db(db, graphemat.load_file('data/test_003.txt'))
 
-c.executemany('INSERT INTO wfs VALUES (NULL,?,?)', (wf for wf in wfs.items()))
+morpho.create_ngramms_table(db)
 
-db.commit()
-
-# ngramms = dict
-#
-# wfs

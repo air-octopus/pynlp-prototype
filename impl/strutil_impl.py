@@ -110,7 +110,7 @@ def str_build_n_gramms_fix_len(str, ngramm_len):
 def str_build_n_gramms(str):
     def gen(str):
         str_len = len(str)
-        for ngramm_len in range(str_len // 2, str_len + 1):
+        for ngramm_len in range(str_len // 2 if str_len > 1 else 1, str_len + 1):
             yield from str_build_n_gramms_fix_len(str, ngramm_len)
 
     return [ngramm for ngramm in gen(str)]

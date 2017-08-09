@@ -1,10 +1,40 @@
 # Методы морфологического анализа
+import strutil
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Построение таблицы N-грамм
+# Схема:
+# * берем словоформы из таблицы wfs
+# * составляем массив N-грамм
+# * заносим в таблицу ngramms
 def create_ngramms_table(db):
-    pass
+    cngr = db.cursor()
+    cngr.execute('DROP TABLE IF EXISTS ngramms')
+    cngr.execute(
+        '''CREATE TABLE IF NOT EXISTS ngramms
+         (
+               id       INTEGER PRIMARY KEY
+             , ngr      TEXT
+             , wf_id    INTEGER
+         )
+        '''
+    )
+    cngr.execute('CREATE INDEX idx_ngramms_001 ON ngramms (ngr)')
+
+    cwf = db.cursor()
+
+    def wfs():
+        yield from cwf.execute('SELECT id, wf FROM wfs')
+
+    def ngramms():
+        for wf_id, wf in wfs():
+            for ngr in strutil.str_build_n_gramms(wf):
+                yield ngr, wf_id
+
+    cngr.executemany('INSERT INTO ngramms VALUES (NULL,?,?)', ngramms())
+
+    db.commit()
 
 
 # ----------------------------------------------------------------------------------------------------------------------
