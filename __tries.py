@@ -1,7 +1,25 @@
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+from pandas import *
 from matplotlib import mlab
+
+df = pandas.DataFrame()
+df.groupby()
+
+
+df = df.set_index('STNAME')
+def fun(item):
+    if item[0]<'M':
+        return 0
+    if item[0]<'Q':
+        return 1
+    return 2
+
+for group, frame in df.groupby(fun):
+    print('There are ' + str(len(frame)) + ' records in group ' + str(group) + ' for processing.')
+
+
 
 np.random.seed(int(time.time()))
 

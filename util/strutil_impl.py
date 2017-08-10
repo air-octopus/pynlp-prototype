@@ -3,7 +3,18 @@ import itertools
 
 # ----------------------------------------------------------------------------------------------------------------------
 # посимвольная свертка двух строк
-def str_convolution_by_chars(s1, s2, shift=0, only_middle=True):
+def str_convolution_by_chars(s1, s2):
+
+    def char_cmp(c1, c2):
+        return 1 if c1 == c2 else 0
+
+    for x in map(char_cmp, s1, s2):
+        yield x
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# посимвольная свертка двух строк
+def str_convolution_by_chars_shifted(s1, s2, shift, only_middle=True):
     sh1 =  shift if shift > 0 else 0
     sh2 = -shift if shift < 0 else 0
 
@@ -11,11 +22,7 @@ def str_convolution_by_chars(s1, s2, shift=0, only_middle=True):
         for x in range(0, sh1): yield 0
         for x in range(0, sh2): yield 0
 
-    def l(c1, c2):
-        return 1 if c1 == c2 else 0
-
-    for x in map(l, s1[sh1:], s2[sh2:]):
-        yield x
+    yield from str_convolution_by_chars(s1[sh1:], s2[sh2:])
 
     if not only_middle:
         cnt = abs(len(s1) - len(s2) - shift)
@@ -26,7 +33,7 @@ def str_convolution_by_chars(s1, s2, shift=0, only_middle=True):
 # Свертка двух строк
 # shift -- сдвиг второй строки относительно первой
 def str_convolution(s1, s2, shift=0):
-    return sum(str_convolution_by_chars(s1, s2, shift))
+    return sum(str_convolution_by_chars_shifted(s1, s2, shift))
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -121,4 +128,14 @@ def str_build_n_gramms(str):
 def str_store_to_dict(str_dict, str):
     #cnt = str_dict.get(str, 0)
     str_dict[str] = str_dict.get(str, 0) + 1
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Расстояние-по-максимальной-общей-части.
+# Фактически это количество символов, отличающихся в строках.
+# Предполагаем, что строки одной длины. Если это не так,
+# то считаем, что короткая срока дополнена отличающимися символами.
+def str_dist_by_max_same_parts(s1, s2):
+    pass
+
 
