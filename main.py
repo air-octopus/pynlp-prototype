@@ -1,12 +1,15 @@
+import os
 import sqlite3 as sql
-import itertools
-#import Levenshtein
 
-import strutil
+import time
+import matplotlib.pyplot as plt
+
+from util import listutil
+
 import graphemat
 import morpho
 
-import os
+# import Levenshtein
 
 os.makedirs('.temp', exist_ok=True)
 
@@ -39,7 +42,25 @@ os.makedirs('.temp', exist_ok=True)
 
 db = sql.connect('.temp/lingua.db')
 
-graphemat.store_wordforms_to_db(db, graphemat.load_file('data/test_003.txt'))
+# graphemat.store_wordforms_to_db(db, graphemat.load_file('data/test_003.txt'))
+#
+# morpho.create_ngramms_table(db)
 
-morpho.create_ngramms_table(db)
+# cngr = db.cursor()
+# qqq = (o[0] for o in cngr.execute('SELECT DISTINCT wfs.wf FROM wfs, ngramms WHERE wfs.id=ngramms.wf_id AND ngramms.ngr=:ngr', {'ngr': 'ша'}))
 
+
+# TODO: Вывести параметр для сравнения в настройки (???)
+morpho.build_proto_affixes_table(db, 2)
+
+c = db.cursor()
+#
+# ooo = listutil.count_same_elements(o[0] for o in c.execute('SELECT LENGTH(wf) FROM wfs'))
+# ooo = list(ooo)
+# ooo.sort(key=lambda x: x[0])
+#
+# xx = [o[0] for o in ooo]
+# yy = [o[1] for o in ooo]
+#
+# plt.plot(xx, yy)
+# plt.show()

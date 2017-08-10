@@ -1,6 +1,6 @@
 import unittest
 
-import strutil
+from util import strutil
 
 
 class Test_strutil(unittest.TestCase):

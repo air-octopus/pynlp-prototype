@@ -1,6 +1,7 @@
 # Процедуры подготовки данных (чтение файлов, представление в виде массива слов...)
 
-import strutil
+from util import strutil
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Загрузка файла и представление его в виде массива слов.
@@ -60,7 +61,7 @@ def store_wordforms_to_db(db, text_words):
          (
                id       INTEGER PRIMARY KEY
              , wf       TEXT
-             , usage    INTEGER
+             , freq     INTEGER
          )
         ''')
     c.execute('CREATE INDEX idx_wfs_001 ON wfs (wf)')

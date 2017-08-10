@@ -1,5 +1,9 @@
 # Методы морфологического анализа
-import strutil
+
+import Levenshtein
+import pyxdameraulevenshtein
+
+from util import strutil
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -42,10 +46,8 @@ def create_ngramms_table(db):
 # что осталось после удаления предполагаемых основ
 # \return   -- кортеж ([preffixes], 'base', [suffixes])
 def extract_proto_morphemes(s1, s2):
-    from strutil import str_convolution_max, str_split_by_equal
-
-    sh, conv = str_convolution_max(s1, s2)      # Определяем смещение наилучшего совмещения строк
-    ss1, ss2 = str_split_by_equal(s1, s2, sh)   # Разбиваем строки на интервалыодинаковых и разных подстрок
+    sh, conv = strutil.str_convolution_max(s1, s2)      # Определяем смещение наилучшего совмещения строк
+    ss1, ss2 = strutil.str_split_by_equal(s1, s2, sh)   # Разбиваем строки на интервалыодинаковых и разных подстрок
 
     assert len(ss1) == len(ss2), "Unexpected str_split_by_equal(...) result"
     if len(ss1) <= 0:
@@ -88,3 +90,48 @@ def extract_proto_morphemes(s1, s2):
             proto_suffixes
         )
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Построение таблицы прото-аффиксов и прото-основ
+def build_proto_affixes_table(db, comparison_threshould):
+    cursor_wfs = db.cursor()
+    cursor_ngr = db.cursor()
+    cursor_afx = db.cursor()
+
+    cursor_afx.execute('DROP TABLE IF EXISTS proto_afx')
+    cursor_afx.execute(
+        '''CREATE TABLE IF NOT EXISTS proto_afx
+         (
+               id       INTEGER PRIMARY KEY
+             , afx      TEXT
+             , type     INTEGER
+             , wf_id    INTEGER
+         )
+        '''
+    )
+
+    wfs = cursor_wfs.execute('SELECT wf, freq FROM wfs ORDER BY LENGTH(wf) DESC')
+
+    # Найти словоформы-кандидаты для поиска прото-аффиксов
+    def get_candidates(wf):
+        for ngr in strutil.str_build_n_gramms(wf):
+            for candidate in (o[0] for o in cursor_ngr.execute('SELECT DISTINCT wfs.wf FROM wfs, ngramms WHERE wfs.id=ngramms.wf_id AND ngramms.ngr=:ngr', {'ngr': ngr})):
+                dldist = pyxdameraulevenshtein.damerau_levenshtein_distance(candidate, wf)
+                if candidate == wf: continue
+                if dldist > comparison_threshould: continue
+                yield candidate
+
+    for wf in wfs:
+        candidates = set(get_candidates(wf))
+        for candidate in candidates:
+            proto_morphemes = extract_proto_morphemes(wf, candidate)
+            # TODO: переделать (см. схему)
+            # cursor_afx.executemany('INSERT INTO proto_afx VALUES()')
+            pass
+
+
+    pass
+
+
+
+########################################################################################################################
