@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 
 from util import listutil
 
+import results
 import graphemat
 import morpho
 
@@ -42,6 +43,9 @@ os.makedirs('.temp', exist_ok=True)
 
 db = sql.connect('.temp/lingua.db')
 
+# results.show__wflen_distribution(db)
+
+
 # graphemat.store_wordforms_to_db(db, graphemat.load_file('data/test_003.txt'))
 #
 # morpho.create_ngramms_table(db)
@@ -54,13 +58,3 @@ db = sql.connect('.temp/lingua.db')
 morpho.build_proto_affixes_table(db, 2)
 
 c = db.cursor()
-#
-# ooo = listutil.count_same_elements(o[0] for o in c.execute('SELECT LENGTH(wf) FROM wfs'))
-# ooo = list(ooo)
-# ooo.sort(key=lambda x: x[0])
-#
-# xx = [o[0] for o in ooo]
-# yy = [o[1] for o in ooo]
-#
-# plt.plot(xx, yy)
-# plt.show()
