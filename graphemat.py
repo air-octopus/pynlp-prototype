@@ -37,10 +37,7 @@ def load_file(file_name):
     s = s.replace('L', ' ')
     s = s.replace('C', ' ')
     s = s.replace('M', ' ')
-#    s = s.replace('  ', ' ')
-#    s = s.replace('  ', ' ')
-#    s = s.replace('  ', ' ')
-#    s = s.replace('  ', ' ')
+    
     s = s.lower()
 
     dat = [ sub for sub in s.split(' ') if sub != '']
@@ -49,6 +46,10 @@ def load_file(file_name):
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Сохранение массива слов в базу данных
+# DB requirements:
+#       NONE
+# DB results:
+#       таблица словоформ wfs
 def store_wordforms_to_db(db, text_words):
     wfs = dict()
     for wf in text_words:

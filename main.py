@@ -43,18 +43,16 @@ os.makedirs('.temp', exist_ok=True)
 
 db = sql.connect('.temp/lingua.db')
 
-# results.show__wflen_distribution(db)
-
-
-# graphemat.store_wordforms_to_db(db, graphemat.load_file('data/test_003.txt'))
+# graphemat.store_wordforms_to_db(db, graphemat.load_file('data/utf8_test_003.txt'))
 #
 # morpho.create_ngramms_table(db)
 
-# cngr = db.cursor()
-# qqq = (o[0] for o in cngr.execute('SELECT DISTINCT wfs.wf FROM wfs, ngramms WHERE wfs.id=ngramms.wf_id AND ngramms.ngr=:ngr', {'ngr': 'ша'}))
 
 
 # TODO: Вывести параметр для сравнения в настройки (???)
 morpho.build_proto_affixes_table(db, 2)
+#
+# c = db.cursor()
 
-c = db.cursor()
+
+# results.show__wflen_distribution(db)
