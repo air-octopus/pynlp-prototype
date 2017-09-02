@@ -118,6 +118,7 @@ def extract_proto_morphemes(s1, s2):
 # Построение таблицы прото-аффиксов и прото-основ
 def build_proto_affixes_table(db, comparison_threshould):
     cursor_wfs = db.cursor()
+    cursor_bas = db.cursor()
 #     cursor_ngr = db.cursor()
     cursor_afx = db.cursor()
 
@@ -153,50 +154,68 @@ def build_proto_affixes_table(db, comparison_threshould):
             l1.append('{' + wfp[0] + ',' + wfp[1] + '}')
         return ' '.join(l1)
 
-    # найти словоформы-кандидаты для поиска прото-аффиксов
-    def get_candidates(wf, afxlen):
-        ngrlen = len(wf) - afxlen
-        for ngr in strutil.str_build_n_gramms_fix_len(wf, ngrlen):
-            for candidate_id, candidate in get_wordform_by_nramm(db, ngr):
-                # dldist = pyxdameraulevenshtein.damerau_levenshtein_distance(candidate, wf)
-                if candidate == wf: continue
-                # if dldist > comparison_threshould: continue
-                yield candidate_id, candidate
+    def wf_splitter_preffix(wf, afxlen):
+        return wf[afxlen:], wf[:afxlen]
 
-    affixes_counter = listutil.ObjectCounterTagged(lambda: [])
+    def wf_splitter_postfix(wf, afxlen):
+        pos = len(wf)- afxlen
+        return wf[:pos], wf[pos:]
+
+    postfixes_counter = listutil.ObjectCounterTagged(lambda: [])
+
+    # принимаем словоформу, выделяем из нее предполагаемый аффикс и проверяем наличие остатка в общем массиве словоформ
+    # splitter -- процедура разделения словоформы на аффикс и остаток
+    def check_affix(wf, afxlen, splitter, counter):
+        base, afx = splitter(wf, afxlen)
+        for base_id in cursor_bas.execute('SELECT id FROM wfs WHERE wf=:wf LIMIT 1', {'wf': base}):
+            counter.add(afx).append((wf, base))
+
+    # # найти словоформы-кандидаты для поиска прото-аффиксов
+    # def get_candidates(wf, afxlen):
+    #     ngrlen = len(wf) - afxlen
+    #     for ngr in strutil.str_build_n_gramms_fix_len(wf, ngrlen):
+    #         for candidate_id, candidate in get_wordform_by_nramm(db, ngr):
+    #             # dldist = pyxdameraulevenshtein.damerau_levenshtein_distance(candidate, wf)
+    #             if candidate == wf: continue
+    #             # if dldist > comparison_threshould: continue
+    #             yield candidate_id, candidate
+    #
+    # affixes_counter = listutil.ObjectCounterTagged(lambda: [])
     affixes = []
 
-    for afxlen in range(1, max_wf_len):
+    for afxlen in range(1, int(max_wf_len/3)):
         print('afxlen: ', afxlen)
         wfs = wfs_gen()
         for (wf_id, wf, freq) in wfs:
-            candidates = set(get_candidates(wf, afxlen))
-            for candidate_id, candidate in candidates:
-                proto_morphemes = extract_proto_morphemes(wf, candidate)
-                # new_affixes = (
-                #       (proto_morphemes[0][0], 1, wf_id)
-                #     , (proto_morphemes[0][2], 2, wf_id)
-                #     # , (proto_morphemes[1][0], 1, candidate_id)
-                #     # , (proto_morphemes[1][2], 2, candidate_id)
-                # )
+            check_affix(wf, afxlen, wf_splitter_postfix, postfixes_counter)
 
-                if proto_morphemes[1][0] != '' or proto_morphemes[1][2] != '':
-                    continue
-
-                affixes.append((proto_morphemes[0][0], 1, wf_id, candidate_id, wf, candidate))
-                affixes.append((proto_morphemes[0][2], 2, wf_id, candidate_id, wf, candidate))
-
-                # new_affixes = [afx for afx in new_affixes if len(afx[0]) == afxlen]
-                # for afx in new_affixes:
-                #     affixes.add(afx[0]).append((wf, candidate))
-
-                # affixes.extend(new_affixes)
-                # cursor_afx.executemany('INSERT INTO proto_afx VALUES(NULL,?,?,?)', new_affixes)
-                pass
-
-        affixes = [afx for afx in affixes if len(afx[0]) == afxlen]
-        for afx in affixes:
-            affixes_counter.add(afx[0]).append((afx[4], afx[5]))
+        #     candidates = set(get_candidates(wf, afxlen))
+        #     for candidate_id, candidate in candidates:
+        #         proto_morphemes = extract_proto_morphemes(wf, candidate)
+        #         # new_affixes = (
+        #         #       (proto_morphemes[0][0], 1, wf_id)
+        #         #     , (proto_morphemes[0][2], 2, wf_id)
+        #         #     # , (proto_morphemes[1][0], 1, candidate_id)
+        #         #     # , (proto_morphemes[1][2], 2, candidate_id)
+        #         # )
+        #
+        #         if proto_morphemes[1][0] != '' or proto_morphemes[1][2] != '':
+        #             continue
+        #
+        #         affixes.append((proto_morphemes[0][0], 1, wf_id, candidate_id, wf, candidate))
+        #         affixes.append((proto_morphemes[0][2], 2, wf_id, candidate_id, wf, candidate))
+        #
+        #         # new_affixes = [afx for afx in new_affixes if len(afx[0]) == afxlen]
+        #         # for afx in new_affixes:
+        #         #     affixes.add(afx[0]).append((wf, candidate))
+        #
+        #         # affixes.extend(new_affixes)
+        #         # cursor_afx.executemany('INSERT INTO proto_afx VALUES(NULL,?,?,?)', new_affixes)
+        #         pass
+        #
+        # affixes = [afx for afx in affixes if len(afx[0]) == afxlen]
+        # for afx in affixes:
+        #     affixes_counter.add(afx[0]).append((afx[4], afx[5]))
         cursor_afx.executemany('INSERT INTO proto_afx VALUES(NULL,?,?,?)',
                                (
                                    (
@@ -204,11 +223,11 @@ def build_proto_affixes_table(db, comparison_threshould):
                                        afx[1],
                                        build_afx_info(afx[2])
                                    )
-                                   for afx in affixes_counter.elements()
+                                   for afx in postfixes_counter.elements()
                                ))
         db.commit()
         affixes.clear()
-        affixes_counter.clear()
+        postfixes_counter.clear()
 
     db.commit()
 

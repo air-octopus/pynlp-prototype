@@ -56,3 +56,5 @@ morpho.build_proto_affixes_table(db, 2)
 
 
 # results.show__wflen_distribution(db)
+
+results.show__protoaffixes_distribution(db, 5)
