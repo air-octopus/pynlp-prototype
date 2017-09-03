@@ -18,6 +18,20 @@ class Test_strutil(unittest.TestCase):
         self.assertEqual(strutil.str_split_by_equal('rabcdefgh', 'abcqpmgyli', 1),
                          (['r', 'abc', 'def', 'g', 'h', ''], ['', 'abc', 'qpm', 'g', 'y', 'li']))
 
+    def test__str_extract_same_beg(self):
+        self.assertEqual(strutil.str_extract_same_beg('', ''), ('', '', ''))
+        self.assertEqual(strutil.str_extract_same_beg('a', ''), ('', 'a', ''))
+        self.assertEqual(strutil.str_extract_same_beg('', 'a'), ('', '', 'a'))
+        self.assertEqual(strutil.str_extract_same_beg('abc', ''), ('', 'abc', ''))
+        self.assertEqual(strutil.str_extract_same_beg('', 'abc'), ('', '', 'abc'))
+
+        self.assertEqual(strutil.str_extract_same_beg('abc', 'def'), ('', 'abc', 'def'))
+        self.assertEqual(strutil.str_extract_same_beg('abc', 'a'), ('a', 'bc', ''))
+        self.assertEqual(strutil.str_extract_same_beg('abc', 'abd'), ('ab', 'c', 'd'))
+        self.assertEqual(strutil.str_extract_same_beg('abc', 'abcdef'), ('abc', '', 'def'))
+        self.assertEqual(strutil.str_extract_same_beg('abc', 'abdef'), ('ab', 'c', 'def'))
+        self.assertEqual(strutil.str_extract_same_beg('', ''), ('', '', ''))
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 if __name__ == "__main__":
