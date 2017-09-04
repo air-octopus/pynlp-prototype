@@ -6,6 +6,8 @@
 from util import strutil
 from util import listutil
 
+import graphemat
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Построение таблицы N-грамм
@@ -41,6 +43,33 @@ def create_ngramms_table(db):
 
     db.commit()
 
+
+def create_ngramms_beg_table(db):
+    cngr = db.cursor()
+    cngr.execute('DROP TABLE IF EXISTS ngramms_beg')
+    cngr.execute(
+        '''CREATE TABLE IF NOT EXISTS ngramms_beg
+         (
+               id       INTEGER PRIMARY KEY
+             , ngr      TEXT
+             , wf_id    INTEGER
+         )
+        '''
+    )
+    cngr.execute('CREATE INDEX idx_ngramms_beg_001 ON ngramms_beg (ngr)')
+
+    wfs = db.cursor().execute('SELECT id, wf FROM wfs')
+
+    def ngramms():
+        for wf_id, wf in wfs:
+            for ngrlen in range(1, len(wf)+1):
+                yield wf[:ngrlen], wf_id
+
+    cngr.executemany('INSERT INTO ngramms_beg VALUES (NULL,?,?)', ngramms())
+
+    db.commit()
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Найти словоформы по n-грамме
 # DB requirements:
@@ -51,6 +80,18 @@ def get_wordform_by_nramm(db, ngr):
     cursor_ngr = db.cursor()
     query = 'SELECT DISTINCT wfs.id, wfs.wf FROM wfs, ngramms WHERE wfs.id=ngramms.wf_id AND ngramms.ngr=:ngr'
     # for o in cursor_ngr.execute(query, {'ngr': ngr}):
+    yield from cursor_ngr.execute(query, {'ngr': ngr})
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Найти словоформы по начальной n-грамме
+# DB requirements:
+#       существуют и проинициализированы таблицы wfs и ngramms_beg
+# DB results:
+#       NONE
+def get_wordform_by_nramm_beg(db, ngr):
+    cursor_ngr = db.cursor()
+    query = 'SELECT DISTINCT wfs.id, wfs.wf FROM wfs, ngramms_beg WHERE wfs.id=ngramms_beg.wf_id AND ngramms_beg.ngr=:ngr'
     yield from cursor_ngr.execute(query, {'ngr': ngr})
 
 
@@ -232,6 +273,40 @@ def build_proto_affixes_table(db, comparison_threshould):
     db.commit()
 
     pass
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Построение таблицы прото-постфиксов
+def build_proto_postfixes_table(db):
+    cursor_wfs = db.cursor()
+    cursor_bas = db.cursor()
+    cursor_ngr = db.cursor()
+    cursor_afx = db.cursor()
+
+    cursor_afx.execute('DROP TABLE IF EXISTS proto_postfixes')
+    cursor_afx.execute(
+        '''CREATE TABLE IF NOT EXISTS proto_postfixes
+         (
+               id       INTEGER PRIMARY KEY
+             , afx      TEXT
+             , freq     INTEGER
+             , info     TEXT
+         )
+        '''
+    )
+
+    max_wf_len = graphemat.get_max_wfs_len(db)
+    wfs_gen = lambda: cursor_wfs.execute('SELECT id, wf, freq FROM wfs ORDER BY wf ASC')
+
+    for wf_id, wf, freq in wfs_gen():
+        wf_len = len(wf)
+        ngr = wf[:int((wf_len+1)/2)]
+
+        for candidate in get_wordform_by_nramm_beg(ngr):
+            base, afx1, afx2 = strutil.str_extract_same_beg(wf, candidate)
+            pass
+
+
 
 
 

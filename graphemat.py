@@ -37,7 +37,7 @@ def load_file(file_name):
     s = s.replace('L', ' ')
     s = s.replace('C', ' ')
     s = s.replace('M', ' ')
-    
+
     s = s.lower()
 
     dat = [ sub for sub in s.split(' ') if sub != '']
@@ -72,4 +72,11 @@ def store_wordforms_to_db(db, text_words):
     db.commit()
 
 
+def get_max_wfs_len(db):
+    cursor_wfs = db.cursor()
+    max_wf_len = 0
+    for wf_len in cursor_wfs.execute('SELECT LENGTH(wf) FROM wfs ORDER BY LENGTH(wf) DESC LIMIT 1'):
+        max_wf_len = wf_len[0]
+
+    return max_wf_len
 
