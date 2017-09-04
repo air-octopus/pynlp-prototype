@@ -90,9 +90,9 @@ def get_wordform_by_nramm(db, ngr):
 # DB results:
 #       NONE
 def get_wordform_by_nramm_beg(db, ngr):
-    cursor_ngr = db.cursor()
+    # cursor_ngr = db.cursor()
     query = 'SELECT DISTINCT wfs.id, wfs.wf FROM wfs, ngramms_beg WHERE wfs.id=ngramms_beg.wf_id AND ngramms_beg.ngr=:ngr'
-    yield from cursor_ngr.execute(query, {'ngr': ngr})
+    yield from db.cursor().execute(query, {'ngr': ngr})
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -155,6 +155,15 @@ def extract_proto_morphemes(s1, s2):
     #     )
 
 
+
+# ----------------------------------------------------------------------------------------------------------------------
+def build_afx_info(wfpairs):
+    l1 = []
+    for wfp in wfpairs:
+        l1.append('{' + wfp[0] + ',' + wfp[1] + '}')
+    return ' '.join(l1)
+
+
 # ----------------------------------------------------------------------------------------------------------------------
 # Построение таблицы прото-аффиксов и прото-основ
 def build_proto_affixes_table(db, comparison_threshould):
@@ -188,12 +197,6 @@ def build_proto_affixes_table(db, comparison_threshould):
         max_wf_len = wf_len[0]
 
     wfs_gen = lambda: cursor_wfs.execute('SELECT id, wf, freq FROM wfs ORDER BY LENGTH(wf) DESC')
-
-    def build_afx_info(wfpairs):
-        l1 = []
-        for wfp in wfpairs:
-            l1.append('{' + wfp[0] + ',' + wfp[1] + '}')
-        return ' '.join(l1)
 
     def wf_splitter_preffix(wf, afxlen):
         return wf[afxlen:], wf[:afxlen]
@@ -295,6 +298,8 @@ def build_proto_postfixes_table(db):
         '''
     )
 
+    affixes = listutil.ObjectCounterTagged(lambda: [])
+
     max_wf_len = graphemat.get_max_wfs_len(db)
     wfs_gen = lambda: cursor_wfs.execute('SELECT id, wf, freq FROM wfs ORDER BY wf ASC')
 
@@ -302,12 +307,45 @@ def build_proto_postfixes_table(db):
         wf_len = len(wf)
         ngr = wf[:int((wf_len+1)/2)]
 
-        for candidate in get_wordform_by_nramm_beg(ngr):
+        wf_affixes = dict()
+
+        for candidate_id, candidate in get_wordform_by_nramm_beg(db, ngr):
+            candidate_len = len(candidate)
+            if wf_len < 3: continue
+            if candidate <= wf: continue
+            if candidate_len > 2*wf_len+1: continue
+
             base, afx1, afx2 = strutil.str_extract_same_beg(wf, candidate)
-            pass
 
+            afx1_len = len(afx1)
+            afx2_len = len(afx2)
+            base_len = len(base)
 
+            if afx1_len > base_len: afx1 = ''
+            if afx2_len > base_len: afx2 = ''
 
+            if afx1 != '':
+                second_parts = wf_affixes.get(afx1, [])
+                second_parts.append(candidate)
+                wf_affixes[afx1] = second_parts
+            if afx2 != '':
+                affixes.add(afx2).append((candidate, wf))
 
+        for afx, candidates in wf_affixes.items():
+            afx_tag = affixes.add(afx)
+            for candidate in candidates:
+                afx_tag.append((wf, candidate))
+
+    cursor_afx.executemany('INSERT INTO proto_postfixes VALUES(NULL,?,?,?)',
+                           (
+                               (
+                                   afx[0],
+                                   afx[1],
+                                   build_afx_info(afx[2])
+                               )
+                               for afx in affixes.elements()
+                           ))
+    db.commit()
+    affixes.clear()
 
 ########################################################################################################################

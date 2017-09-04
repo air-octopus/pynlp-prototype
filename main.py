@@ -43,10 +43,10 @@ os.makedirs('.temp', exist_ok=True)
 
 db = sql.connect('.temp/lingua.db')
 
-# graphemat.store_wordforms_to_db(db, graphemat.load_file('data/utf8_test_003.txt'))
+graphemat.store_wordforms_to_db(db, graphemat.load_file('data/utf8_test_003.txt'))
 #
 # morpho.create_ngramms_table(db)
-# morpho.create_ngramms_beg_table(db)
+morpho.create_ngramms_beg_table(db)
 
 
 

@@ -8,7 +8,9 @@ from util import strutil
 # Все символы не относящиеся к словам (знаки препинания, цифры,...) удаляются.
 # Все слова переводятся в нижний регистр
 def load_file(file_name):
-    s = open(file_name).read()
+    s = open(file=file_name, encoding='utf-8').read()
+
+    s = s.lower()
 
     s = s.replace('\n', ' ')
     s = s.replace('.', ' ')
@@ -31,14 +33,12 @@ def load_file(file_name):
     s = s.replace('7', ' ')
     s = s.replace('8', ' ')
     s = s.replace('9', ' ')
-    s = s.replace('I', ' ')
-    s = s.replace('V', ' ')
-    s = s.replace('X', ' ')
-    s = s.replace('L', ' ')
-    s = s.replace('C', ' ')
-    s = s.replace('M', ' ')
-
-    s = s.lower()
+    s = s.replace('i', ' ')
+    s = s.replace('v', ' ')
+    s = s.replace('x', ' ')
+    s = s.replace('l', ' ')
+    s = s.replace('c', ' ')
+    s = s.replace('m', ' ')
 
     dat = [ sub for sub in s.split(' ') if sub != '']
     return dat
