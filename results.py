@@ -19,15 +19,16 @@ def show__wflen_distribution(db):
 
 # ----------------------------------------------------------------------------------------------------------------------
 #
-def show__protoaffixes_distribution(db, afxlen):
+def show__protoaffixes_distribution(db):
     c = db.cursor()
 
-    for len in range(1, afxlen):
-        ooo = c.execute('SELECT afx, freq FROM proto_afx WHERE LENGTH(afx)=:afxlen ORDER BY freq DESC', {'afxlen': len})
+    # for len in range(1, afxlen):
+        # ooo = c.execute('SELECT afx, freq FROM proto_afx WHERE LENGTH(afx)=:afxlen ORDER BY freq DESC', {'afxlen': len})
+    ooo = c.execute('SELECT afx, freq FROM proto_postfixes ORDER BY freq DESC')
 
-        # xx = [o[0] for o in ooo]
-        yy = [o[1] for o in ooo]
-        plt.plot(yy)
+    # xx = [o[0] for o in ooo]
+    yy = [o[1] for o in ooo]
+    plt.plot(yy)
 
     plt.show()
 

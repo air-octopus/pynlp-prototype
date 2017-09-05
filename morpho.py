@@ -282,8 +282,6 @@ def build_proto_affixes_table(db, comparison_threshould):
 # Построение таблицы прото-постфиксов
 def build_proto_postfixes_table(db):
     cursor_wfs = db.cursor()
-    cursor_bas = db.cursor()
-    cursor_ngr = db.cursor()
     cursor_afx = db.cursor()
 
     cursor_afx.execute('DROP TABLE IF EXISTS proto_postfixes')
@@ -297,6 +295,9 @@ def build_proto_postfixes_table(db):
          )
         '''
     )
+    cursor_afx.execute('CREATE INDEX idx_proto_postfixes_001 ON proto_postfixes (afx)')
+    cursor_afx.execute('CREATE INDEX idx_proto_postfixes_002 ON proto_postfixes (LENGTH(afx))')
+    cursor_afx.execute('CREATE INDEX idx_proto_postfixes_003 ON proto_postfixes (freq)')
 
     affixes = listutil.ObjectCounterTagged(lambda: [])
 
@@ -347,5 +348,17 @@ def build_proto_postfixes_table(db):
                            ))
     db.commit()
     affixes.clear()
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Представление длинных сложных постфиксов в видепоследовательности нескольких более коротких
+def decompose_postfixes(db):
+    pass
+
+
+# ----------------------------------------------------------------------------------------------------------------------
+# Построение таблицы постфиксов
+def build_postfixes_table(db):
+    build_proto_postfixes_table(db)
 
 ########################################################################################################################
