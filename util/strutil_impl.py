@@ -148,22 +148,40 @@ def str_store_to_dict(str_dict, str):
 # Предполагаем, что строки одной длины. Если это не так,
 # то считаем, что короткая срока дополнена отличающимися символами.
 def str_dist_by_max_same_parts(s1, s2):
+    # not implemented
     pass
 
 
 # ----------------------------------------------------------------------------------------------------------------------
 # Представить строку (если это возможно) в виде последовательности более коротких строк
-# из набора components
-# Если возможно несколько вариантов разбиения -- возвращаем все возможные
-def str_decompose(s, components):
-    c = {}
-    # c.
-    lst = []
-    str_len = len(s)
-    for i in range(1, str_len):
-        beg = s[:i]
-        end = s[i:]
-        if components.get(beg, '') != '':
-            lst.append()
+# из набора dic
+# Если возможно несколько вариантов декомпозиции -- возвращаем все возможные
+# Если декомпозиция невозможна -- возвращаем []
+def str_decompose(s, dic, allow_self=False):
+    def str_decompose_impl(s, dic, allow_self):
+        result = []
+        str_len = len(s)
+        for i in range(1, str_len):
+            beg = s[:i]
+            end = s[i:]
+            if beg in dic:
+                components_tails = str_decompose_impl(end, dic, True)
+                for components_tail in components_tails:
+                    components = [beg]
+                    components.extend(components_tail)
+                    result.append(components)
+
+        # if s in dic or (len(result)==0 and allow_not_in_dic):
+        if s in dic and allow_self:
+            result.append([s])
+
+        return result
+
+    #--- Раскоментировать этот код, если нужно саму строку в виде вложенного списка [[s]] в случае, когда декомпозиция невозможна
+    #--- return str_decompose_impl(s, dic, True)
+
+    return str_decompose_impl(s, dic, allow_self)
+
+
 
 

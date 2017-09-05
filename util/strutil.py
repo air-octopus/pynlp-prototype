@@ -10,3 +10,5 @@ from util.strutil_impl import str_build_n_gramms_fix_len
 from util.strutil_impl import str_build_n_gramms
 
 from util.strutil_impl import str_store_to_dict
+
+from util.strutil_impl import str_decompose

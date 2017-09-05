@@ -322,8 +322,8 @@ def build_proto_postfixes_table(db):
             afx2_len = len(afx2)
             base_len = len(base)
 
-            if afx1_len > base_len: afx1 = ''
-            if afx2_len > base_len: afx2 = ''
+            if afx1_len + 3 > base_len: afx1 = ''
+            if afx2_len + 3 > base_len: afx2 = ''
 
             if afx1 != '':
                 second_parts = wf_affixes.get(afx1, [])
@@ -353,6 +353,17 @@ def build_proto_postfixes_table(db):
 # ----------------------------------------------------------------------------------------------------------------------
 # Представление длинных сложных постфиксов в видепоследовательности нескольких более коротких
 def decompose_postfixes(db):
+    cursor_afx = db.cursor()
+    data = cursor_afx.execute('SELECT afx FROM proto_postfixes ORDER BY LENGTH(afx) ASC')
+    affixes = list(afx[0] for afx in data)
+    affixes_set = set(affixes)
+    affixes_new = []
+
+    for afx in affixes:
+        components = strutil.str_decompose(afx, affixes, False)
+        if len(components) > 0:
+            affixes_set = affixes_set - {afx}
+
     pass
 
 

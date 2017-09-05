@@ -52,9 +52,8 @@ graphemat.store_wordforms_to_db(db, graphemat.load_file('data/utf8_test_003.txt'
 
 # TODO: Вывести параметр для сравнения в настройки (???)
 morpho.build_proto_postfixes_table(db)
-#
-# c = db.cursor()
 
+morpho.decompose_postfixes(db)
 
 # results.show__wflen_distribution(db)
 
