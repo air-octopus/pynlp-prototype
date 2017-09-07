@@ -43,18 +43,21 @@ os.makedirs('.temp', exist_ok=True)
 
 db = sql.connect('.temp/lingua.db')
 
-graphemat.store_wordforms_to_db(db, graphemat.load_file('data/utf8_test_003.txt'))
+# graphemat.store_wordforms_to_db(db, graphemat.load_file('data/utf8_test_003.txt'))
 #
 # morpho.create_ngramms_table(db)
 # morpho.create_ngramms_beg_table(db)
 
+morpho.prepare_bases_table(db)
+
+# построение таблицы префиксов
+# morpho.build_proto_postfixes_table(db)
+
+# декомпозиция длинных аффиксов по более коротким
+# morpho.decompose_postfixes(db)
 
 
-# TODO: Вывести параметр для сравнения в настройки (???)
-morpho.build_proto_postfixes_table(db)
-
-morpho.decompose_postfixes(db)
 
 # results.show__wflen_distribution(db)
 
-# results.show__protoaffixes_distribution(db)
+results.show__protoaffixes_distribution(db)

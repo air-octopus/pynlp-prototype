@@ -155,6 +155,35 @@ def extract_proto_morphemes(s1, s2):
     #     )
 
 
+# ----------------------------------------------------------------------------------------------------------------------
+# Таблицы аффиксов будут строится на основании таблицы основ, которая в процессе работы будет пополняться.
+# Первоначально таблица основ будет совпадать с таблицей словоформ
+# подготовкой этой таблицыи занимается эта функция
+def prepare_bases_table(db):
+    cursor_wfs = db.cursor()
+    cursor_bas = db.cursor()
+
+    cursor_bas.execute('DROP TABLE IF EXISTS _bases')
+    cursor_bas.execute(
+        '''CREATE TABLE IF NOT EXISTS _bases
+         (
+               id       INTEGER PRIMARY KEY
+             , bas      TEXT
+             , info     TEXT
+         )
+        '''
+    )
+
+    cursor_bas.executemany('INSERT INTO _bases VALUES(NULL,?,?)',
+                               (
+                                   (
+                                       wf[0],
+                                       wf[0]
+                                   )
+                                   for wf in cursor_wfs.execute('SELECT wf FROM wfs')
+                               ))
+    db.commit()
+
 
 # ----------------------------------------------------------------------------------------------------------------------
 def build_afx_info(wfpairs):
@@ -306,13 +335,14 @@ def build_proto_postfixes_table(db):
 
     for wf_id, wf, freq in wfs_gen():
         wf_len = len(wf)
+        if wf_len < 3: continue
+
         ngr = wf[:int((wf_len+1)/2)]
 
         wf_affixes = dict()
 
         for candidate_id, candidate in get_wordform_by_nramm_beg(db, ngr):
             candidate_len = len(candidate)
-            if wf_len < 3: continue
             if candidate <= wf: continue
             if candidate_len > 2*wf_len+1: continue
 
